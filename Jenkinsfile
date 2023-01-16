@@ -1,34 +1,36 @@
 pipeline {
   agent any
+
+  environment {
+    DOCKERHUB_CREDENTIALS = credentials('dockerlogin')
+  }
+
   tools { 
-        maven 'Maven 3.5.2'  
+        ///depentencias 
+        maven 'Maven 3.6.3' 
+        terraform 'Terraform 1.3.7' 
     }
 
 
+// Stages.
+  stages {   
 
-stages{
-
-stage('Slack Notification(Start)') {
+    stage('Slack Notification(Start)') {
       steps {
         slackSend message: 'Pipeline Inciada!. Necessidade de atenção, caso seja em Produção!'
 
 }
 }
 
-stage('Clone repository') { 
-      steps { 
-        script{
-          checkout scm
-            }
-             } 
-    }
-stage('Slack Notification(test unit code and vulnerability)') {
-    steps {
-      slackSend message: 'Pipeline está no estagio de teste no codigo. O Processo será realiazado no Quality Gate, são teste de Sonar e Synk, ambos vão verificar "bugs e vulnerabilidade" em nosso codigo!'
 
-}
-}
- 
+stage('GIT CLONE') {
+  steps {
+                // Get code from a GitHub repository
+    git url: 'https://github.com/BrunoSantos88/Jenkins-backend.git', branch: 'main',
+    credentialsId: 'jenkins-aws'
+          }
+  }
+
    
 stage('Synk-GateSonar-Security') {
             steps {		
@@ -36,55 +38,25 @@ stage('Synk-GateSonar-Security') {
 					sh 'mvn snyk:test -fn'
 				}
 			}
-  }
+}
 
 ///DockerProcesso
-stage('Socker Build') { 
-            steps { 
-               withDockerRegistry([credentialsId: "dockerlogin88", url: ""]) {
-                 script{
-                 app =  docker.build("backend")
-                 }
-               }
-            }
+    stage('Docker Build') {
+      steps {
+        sh 'docker build -t brunosantos88/awsbackend backend/.'
+      }
     }
 
-stage('Docker Push') {
-            steps {
-                script{
-                    docker.withRegistry('https://555527584255.dkr.ecr.us-west-2.amazonaws.com', 'ecr:us-west-2:aws-credentials') {
-                    app.push("latest")
-                    }
-                }
-            }
-    	}
-
-stage('Slack Notification(Docker)') {
-    steps {
-      slackSend message: 'Processo de Criar imagem de Release do backend no Docker, foi efetuado com sucesso!'
-
-}
-}
-	    
-  }
-
-
-// Email Notification
-post {
-        always {
-            echo "Notifying build result by email"
-        }
-success {
-            mail to: 'infratidevops@gmail.com',
-                 subject: "SUCCESS: ${currentBuild.fullDisplayName}",
-                 body: "Pipeline passou, Efetou com Sucesso"
-
-        }
-failure {
-           mail to: 'infratidevops@gmail.com',
-                subject:"FAILURE: ${currentBuild.fullDisplayName}",
-                body: "Pipeline Falhou , verificar os parametros corretos!"
-
-        }
+    stage('Docker Login') {
+      steps {
+        sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
       }
+    }
+   
+    stage('Docker Push') {
+      steps {
+        sh 'docker push brunosantos88/awsbackend:latest'
+      }
+    }
+  }
 }

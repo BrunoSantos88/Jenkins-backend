@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: gcr.io/bootcamp-363315/backend:latest
+        image: brunosantos88/awsbackend:latest
         ports:
           - containerPort: 80
             name: backend

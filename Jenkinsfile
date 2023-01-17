@@ -7,20 +7,13 @@ pipeline {
 
   tools { 
         ///depentencias 
-        maven 'Maven 3.6.3' 
-        terraform 'Terraform 1.3.7' 
+        maven 'Maven 3.5.2' 
+
     }
 
 
 // Stages.
   stages {   
-
-    stage('Slack Notification(Start)') {
-      steps {
-        slackSend message: 'Pipeline Inciada!. Necessidade de atenção, caso seja em Produção!'
-
-}
-}
 
 
 stage('GIT CLONE') {
@@ -30,6 +23,14 @@ stage('GIT CLONE') {
     credentialsId: 'jenkins-aws'
           }
   }
+
+stages{
+    stage('SonarCloud-GateCode-Quality') {
+            steps {	
+		sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=Jenkins-backend -Dsonar.organization=brunosantos881388 -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=53605ca03976b7b9426745604501d6d6914fc92a'
+			}
+        } 
+}
 
    
 stage('Synk-GateSonar-Security') {

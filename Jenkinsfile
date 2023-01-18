@@ -24,14 +24,6 @@ stage('GIT CLONE') {
           }
   }
 
-stages{
-    stage('SonarCloud-GateCode-Quality') {
-            steps {	
-		sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=Jenkins-backend -Dsonar.organization=brunosantos881388 -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=53605ca03976b7b9426745604501d6d6914fc92a'
-			}
-        } 
-}
-
    
 stage('Synk-GateSonar-Security') {
             steps {		
@@ -41,7 +33,7 @@ stage('Synk-GateSonar-Security') {
 			}
 }
 
-///DockerProcesso
+///Docker STEPS
     stage('Docker Build') {
       steps {
         sh 'docker build -t brunosantos88/awsbackend backend/.'

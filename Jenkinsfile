@@ -7,7 +7,7 @@ pipeline {
 
   tools { 
         ///depentencias 
-        maven 'Maven 3.5.2' 
+        maven 'MAVEN 3.5.2' 
 
     }
 
@@ -46,7 +46,7 @@ stage('Synk-GateSonar-Security') {
       steps {
         sh 'docker build -t brunosantos88/awsbackend backend/.'
       }
-    }
+   }
 
     stage('Docker Login') {
       steps {
@@ -55,33 +55,34 @@ stage('Synk-GateSonar-Security') {
     }
    
     stage('Docker Push') {
-      steps {
-        sh 'docker push brunosantos88/awsbackend:latest'
-      }
-    }
+     steps {
+       sh 'docker push brunosantos88/awsbackend:latest'
+     }
+   }
   
   stage('Kubernetes Deployment backend') {
 	   steps {
-	      withKubeConfig([credentialsId: 'kubelogin']) {
-		  sh ('kubectl apply -f backend.yaml --namespace=developer')
+	    withKubeConfig([credentialsId: 'kubelogin']) {
+		  sh ('kubectl apply -f backend.yaml --namespace=devsecops')
 		}
-	      }
+	     }
    	}
 
-     stage ('Aguardar 180s Instalar OWSZAP'){
-	   steps {
-		   sh 'pwd; sleep 180; echo "Application Has been deployed on K8S"'
-	   	}
-	   }
+   //  stage ('Aguardar 180s Instalar OWSZAP'){
+	 //  steps {
+		//   sh 'pwd; sleep 180; echo "Application Has been deployed on K8S"'
+	 //  	}
+	 ////  }
 	   
-stage('OWSZAP Backend') {
-    steps {
-		withKubeConfig([credentialsId: 'kubelogin']) {
-		sh('zap.sh -cmd -quickurl http://$(kubectl get services/backend --namespace=developer -o json| jq -r ".status.loadBalancer.ingress[] | .hostname") -quickprogress -quickout ${WORKSPACE}/zap_report.html')
-	  archiveArtifacts artifacts: 'zap_report.html'
-		}
-	  }
-    } 
 
-  }
+///stage('OWSZAP Backend') {
+  //  steps {
+	//	withKubeConfig([credentialsId: 'kubelogin']) {
+	//	sh('zap.sh -cmd -quickurl http://$(kubectl get services/backend --namespace=developer -o json| jq -r ".status.loadBalancer.ingress[] | .hostname") -quickprogress -quickout ${WORKSPACE}/zap_report.html')
+	 // archiveArtifacts artifacts: 'zap_report.html'
+	//	}
+	 // }
+   // } 
+
+  //}
 }

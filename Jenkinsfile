@@ -7,7 +7,7 @@ pipeline {
 
   tools { 
         ///depentencias 
-        maven 'MAVEN 3.5.2' 
+        maven 'Maven 3.6.3' 
 
     }
 

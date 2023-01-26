@@ -24,6 +24,12 @@ stage('GIT CLONE') {
           }
   }
 
+stage('CompileandRunSonarAnalysis') {
+    steps {	
+		sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=Jenkins-backend -Dsonar.organization= -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=599b56c3dd40d5744bef783dbdd4d4f8bdc87e0c'
+			}
+    }
+
    
 stage('Synk-GateSonar-Security') {
             steps {		
@@ -52,28 +58,28 @@ stage('Synk-GateSonar-Security') {
      }
    }
   
-  stage('Kubernetes Deployment backend') {
-	   steps {
-	    withKubeConfig([credentialsId: 'kubelogin']) {
-		  sh ('kubectl apply -f backend.yaml --namespace=devsecops')
-		}
-	     }
-   	}
+  //stage('Kubernetes Deployment backend') {
+	//   steps {
+	   // withKubeConfig([credentialsId: 'kubelogin']) {
+		//  sh ('kubectl apply -f backend.yaml --namespace=devsecops')
+	//	}
+	 //    }
+  // 	}
 
-    stage ('AGUARDAR 180s INSTALAÇAO OWSZAP'){
-	  steps {
-    sh 'pwd; sleep 180; echo "Application Has been deployed on K8S"'
-	  	}
-	   }
+  ///  stage ('AGUARDAR 180s INSTALAÇAO OWSZAP'){
+	//  steps {
+  //  sh 'pwd; sleep 180; echo "Application Has been deployed on K8S"'
+	//  	}
+	//   }
 	   
 
-stage('OWSZAP PROXI BACKEND') {
-    steps {
-		withKubeConfig([credentialsId: 'kubelogin']) {
-		sh('zap.sh -cmd -quickurl http://$(kubectl get services/backend --namespace=devsecops -o json| jq -r ".status.loadBalancer.ingress[] | .hostname") -quickprogress -quickout ${WORKSPACE}/zap_report.html')
-	  archiveArtifacts artifacts: 'zap_report.html'
-	}
-	  }
-    } 
+///stage('OWSZAP PROXI BACKEND') {
+  //  steps {
+	//	withKubeConfig([credentialsId: 'kubelogin']) {
+	//	sh('zap.sh -cmd -quickurl http://$(kubectl get services/backend --namespace=devsecops -o json| jq -r ".status.loadBalancer.ingress[] | .hostname") -quickprogress -quickout ${WORKSPACE}/zap_report.html')
+	 // archiveArtifacts artifacts: 'zap_report.html'
+	//}
+	//  }
+  //  } 
 }
 }
